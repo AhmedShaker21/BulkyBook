@@ -1,0 +1,153 @@
+﻿@model ShoppingCart
+
+<style>
+
+    /* MAIN IMAGE */
+    .main-image {
+        width: 100%;
+        height: 420px;
+        object-fit: cover;
+        border-radius: 14px;
+        box-shadow: 0 6px 18px rgba(0,0,0,.12);
+    }
+
+    /* THUMBNAILS */
+    .thumb-img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 10px;
+        margin-right: 8px;
+        cursor: pointer;
+        transition: .2s;
+        border: 2px solid transparent;
+    }
+
+        .thumb-img:hover {
+            border-color: #0d6efd;
+            transform: scale(1.04);
+        }
+
+    /* PRICE BOX */
+    .price-box {
+        background: #f8f9fa;
+        padding: 18px;
+        border-radius: 14px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+
+    /* BACK BUTTON */
+    .back-btn {
+        border-radius: 10px;
+        font-weight: 600;
+    }
+
+    /* ADD TO CART BUTTON */
+    .btn-add {
+        border-radius: 14px;
+        font-weight: 700;
+        letter-spacing: .5px;
+        padding: 0.8rem;
+    }
+</style>
+
+<form method="post">
+    <input hidden asp-for="ProductId" />
+
+    <div class="container py-4">
+        <div class="row">
+
+            <!-- ================= LEFT COLUMN ================= -->
+            <div class="col-lg-5 text-center">
+
+                <!-- BACK BUTTON -->
+                <a asp-action="Index" class="btn btn-outline-primary mb-4 back-btn">
+                    ← Back to Home
+                </a>
+
+                <!-- MAIN IMAGE -->
+                @if (Model.Product.ProductImages != null && Model.Product.ProductImages.Any())
+                {
+                    <img id="mainPreview"
+                         src="@Model.Product.ProductImages.First().ImageUrl"
+                         class="main-image mb-3" />
+                }
+                else
+                {
+                    <img src="https://placehold.co/600x800" class="main-image mb-3" />
+                }
+
+                <!-- THUMBNAILS -->
+                @if (Model.Product.ProductImages != null && Model.Product.ProductImages.Any())
+                {
+                    <div class="d-flex justify-content-center mt-2">
+                        @foreach (var img in Model.Product.ProductImages)
+                        {
+                            <img src="@img.ImageUrl"
+                                 onclick="document.getElementById('mainPreview').src='@img.ImageUrl'"
+                                 class="thumb-img" />
+                        }
+                    </div>
+                }
+
+            </div>
+
+            <!-- ================= RIGHT COLUMN ================= -->
+            <div class="col-lg-6 offset-lg-1">
+
+                <h2 class="fw-bold text-dark">@Model.Product.Title</h2>
+                <h6 class="text-warning fw-semibold">by @Model.Product.Author</h6>
+
+                <span class="badge bg-primary mt-2 mb-3">@Model.Product.Category.Name</span>
+
+                <p class="text-muted">ISBN: @Model.Product.ISBN</p>
+
+                <!-- PRICE BOX -->
+                <div class="price-box mb-4">
+                    <p class="mb-1 text-danger fw-semibold">
+                        List Price:
+                        <span class="text-decoration-line-through">
+                            @Model.Product.ListPrice.ToString("c")
+                        </span>
+                    </p>
+
+                    <div class="row text-center fw-bold">
+                        <div class="col-3">Qty</div>
+                        <div class="col-3">1–50</div>
+                        <div class="col-3">51–100</div>
+                        <div class="col-3">100+</div>
+                    </div>
+
+                    <div class="row text-center text-success fw-bold">
+                        <div class="col-3">Price</div>
+                        <div class="col-3">@Model.Product.Price.ToString("c")</div>
+                        <div class="col-3">@Model.Product.Price50.ToString("c")</div>
+                        <div class="col-3">@Model.Product.Price100.ToString("c")</div>
+                    </div>
+                </div>
+
+                <!-- DESCRIPTION -->
+                <p class="text-secondary lh-base">@Html.Raw(Model.Product.Description)</p>
+
+                <!-- COUNT -->
+                <div class="col-md-4 px-0 mb-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-primary text-white fw-bold">
+                            Qty
+                        </span>
+                        <input asp-for="Count" type="number" value="1" class="form-control text-end" min="1" />
+                    </div>
+                </div>
+
+                <!-- ADD TO CART -->
+                <button type="submit"
+                        class="btn btn-primary w-100 btn-add">
+                    <i class="bi bi-cart-plus"></i> Add to Cart
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+
+</form>
