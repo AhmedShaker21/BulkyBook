@@ -1,0 +1,57 @@
+﻿@model BulkyBook.Models.Memo
+
+<h2 class="mb-4">مراجعة المذكرة</h2>
+
+<div class="card shadow p-4">
+
+    <h4 class="text-primary">@Model.Subject</h4>
+    <hr />
+
+    <div class="mb-3">
+        <strong>من:</strong> @Model.FromDepartment?.Name
+    </div>
+
+    <div class="mb-3">
+        <strong>إلى:</strong> @Model.ToDepartment?.Name
+    </div>
+
+    <div class="mb-3">
+        <strong>التاريخ:</strong> @Model.CreatedAt.ToString("yyyy/MM/dd - HH:mm")
+    </div>
+
+    <div class="mb-3">
+        <strong>الحالة:</strong>
+        <span class="badge bg-info">@Model.Status</span>
+    </div>
+
+    <hr />
+
+    <div class="mb-3">
+        <strong>المحتوى:</strong>
+        <div class="p-3 bg-light rounded">
+            @Model.Body
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="d-flex gap-3 mt-4">
+
+        <!-- زرار اعتماد -->
+        <form asp-action="Approve" asp-route-id="@Model.Id" method="post">
+            <button class="btn btn-success">اعتماد</button>
+        </form>
+
+        <!-- زرار رفض -->
+        <form asp-action="Reject" asp-route-id="@Model.Id" method="post">
+            <button class="btn btn-danger">رفض</button>
+        </form>
+
+        <!-- زرار مراجعة -->
+        <form asp-action="ReviewMemo" asp-route-id="@Model.Id" method="post">
+            <button class="btn btn-warning">مراجعة</button>
+        </form>
+
+    </div>
+
+</div>

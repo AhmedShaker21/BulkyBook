@@ -1,0 +1,26 @@
+﻿@model BulkyBook.Models.Memo
+
+<h2>تفاصيل المذكرة</h2>
+
+<div class="card p-4">
+
+    <h4>@Model.Subject</h4>
+
+    <p>
+        <strong>من:</strong> @Model.FromDepartment?.Name
+        <br />
+        <strong>إلى:</strong> @Model.ToDepartment?.Name
+        <br />
+        <strong>الحالة:</strong>
+        @await Html.PartialAsync("_MemoStatusBadge", Model.Status)
+        <br />
+        <strong>التاريخ:</strong> @Model.CreatedAt
+    </p>
+
+    <hr />
+
+    <h5>المحتوى:</h5>
+    <p>@Model.Body</p>
+
+    <a asp-action="Inbox" class="btn btn-secondary">رجوع</a>
+</div>

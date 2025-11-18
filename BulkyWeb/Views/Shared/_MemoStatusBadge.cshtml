@@ -1,0 +1,36 @@
+﻿@model BulkyBook.Models.MemoStatus
+
+@{
+    string text = "";
+    string css = "";
+
+    switch (Model)
+    {
+        case BulkyBook.Models.MemoStatus.New:
+            text = "جديدة";
+            css = "badge bg-primary";
+            break;
+
+        case BulkyBook.Models.MemoStatus.UnderReview:
+            text = "قيد المراجعة";
+            css = "badge bg-warning text-dark";
+            break;
+
+        case BulkyBook.Models.MemoStatus.Approved:
+            text = "معتمدة";
+            css = "badge bg-success";
+            break;
+
+        case BulkyBook.Models.MemoStatus.Rejected:
+            text = "مرفوضة";
+            css = "badge bg-danger text-light";
+            break;
+
+        case BulkyBook.Models.MemoStatus.Closed:
+            text = "مغلقة";
+            css = "badge bg-dark";
+            break;
+    }
+}
+
+<span class="@css">@text</span>

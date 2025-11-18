@@ -1,0 +1,27 @@
+﻿@model IEnumerable<dynamic>
+
+@{
+    ViewData["Title"] = "Sectors";
+}
+
+<h2>القطاعات</h2>
+
+<a asp-action="Create" class="btn btn-primary mb-3">إضافة قطاع</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>الرقم</th>
+            <th>الاسم</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Id</td>
+                <td>@item.Name</td>
+            </tr>
+        }
+    </tbody>
+</table>

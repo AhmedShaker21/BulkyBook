@@ -1,0 +1,31 @@
+﻿@model BulkyBook.Models.Department
+
+<h3 class="mb-4">تعديل إدارة</h3>
+
+<form method="post" asp-area="Admin" asp-controller="Department" asp-action="Edit">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="mb-3">
+        <label class="form-label">اسم الإدارة</label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">الوصف</label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">القطاع</label>
+        <select asp-for="SectorId" asp-items="ViewBag.Sectors" class="form-select"></select>
+        <span asp-validation-for="SectorId" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success w-100">حفظ التعديلات</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

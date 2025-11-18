@@ -1,0 +1,92 @@
+﻿@model IEnumerable<BulkyBook.Models.Memo>
+
+<h2 class="mb-4">الوارد</h2>
+
+<form method="get" class="row mb-3">
+    <div class="col-md-4">
+        <input type="text" name="search"
+               value="@ViewBag.CurrentSearch"
+               class="form-control" placeholder="بحث بعنوان المذكرة..." />
+    </div>
+
+    <div class="col-md-3">
+        <select name="status" class="form-select">
+            <option value="">كل الحالات</option>
+
+            @foreach (var st in Enum.GetValues(typeof(BulkyBook.Models.MemoStatus)))
+            {
+                var isSelected = ViewBag.CurrentStatus != null &&
+                ((BulkyBook.Models.MemoStatus)ViewBag.CurrentStatus) == (BulkyBook.Models.MemoStatus)st;
+
+                <option value="@st" selected="@(isSelected ? "selected" : null)">
+                    @st
+                </option>
+            }
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <button class="btn btn-primary">بحث</button>
+    </div>
+</form>
+
+<table class="table table-bordered table-striped text-center">
+    <thead class="table-dark">
+        <tr>
+            <th>العنوان</th>
+            <th>من</th>
+            <th>إلى</th>
+            <th>التاريخ</th>
+            <th>الحالة</th>
+            <th>إجراءات</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="6" class="text-center text-muted">لا توجد مذكرات واردة</td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var memo in Model)
+            {
+                <tr>
+                    <td>@memo.Subject</td>
+
+                    <!-- من -->
+                    <td>@memo.FromDepartment?.Name</td>
+
+                    <!-- إلى -->
+                    <td>@memo.ToDepartment?.Name</td>
+
+                    <td>@memo.CreatedAt.ToString("yyyy/MM/dd - HH:mm")</td>
+
+                    <td>
+                        @await Html.PartialAsync("_MemoStatusBadge", memo.Status)
+                    </td>
+
+                    <td>
+                        @if (memo.Status == BulkyBook.Models.MemoStatus.New)
+                        {
+                            <a asp-action="Review" asp-route-id="@memo.Id" class="btn btn-warning btn-sm">مراجعة</a>
+                        }
+
+                        @if (memo.Status == BulkyBook.Models.MemoStatus.UnderReview)
+                        {
+                            <a asp-action="Approve" asp-route-id="@memo.Id" class="btn btn-success btn-sm">موافقة</a>
+                            <a asp-action="Reject" asp-route-id="@memo.Id" class="btn btn-danger btn-sm">رفض</a>
+                        }
+
+                        @if (User.IsInRole("Chairman"))
+                        {
+                            <a asp-action="Close" asp-route-id="@memo.Id" class="btn btn-dark btn-sm">إغلاق</a>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

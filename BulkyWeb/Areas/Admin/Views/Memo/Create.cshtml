@@ -1,0 +1,45 @@
+﻿@model BulkyBook.Models.Memo
+
+@{
+    ViewData["Title"] = "إرسال مذكرة جديدة";
+}
+
+<h2 class="mb-4">إرسال مذكرة جديدة</h2>
+
+<form asp-area="Admin"
+      asp-controller="Memo"
+      asp-action="Create"
+      method="post">
+
+
+    <!-- عنوان المذكرة -->
+    <div class="form-group mb-3">
+        <label class="form-label">عنوان المذكرة</label>
+        <input asp-for="Subject" class="form-control" />
+        <span asp-validation-for="Subject" class="text-danger"></span>
+    </div>
+
+    <!-- الجهة المستقبلة -->
+    <div class="form-group mb-3">
+        <label class="form-label">الجهة المستقبلة</label>
+        <select asp-for="ToDepartmentId"
+                asp-items="ViewBag.Departments"
+                class="form-control">
+        </select>
+        <span asp-validation-for="ToDepartmentId" class="text-danger"></span>
+    </div>
+
+    <!-- محتوى المذكرة -->
+    <div class="form-group mb-3">
+        <label class="form-label">محتوى المذكرة</label>
+        <textarea asp-for="Body" class="form-control" rows="5"></textarea>
+        <span asp-validation-for="Body" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">إرسال</button>
+    <a asp-action="Index" asp-controller="Memo" class="btn btn-secondary">رجوع</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

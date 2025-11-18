@@ -1,0 +1,30 @@
+﻿@model BulkyBook.Models.Memo
+
+<h2>إرسال مذكرة جديدة</h2>
+
+<form asp-area="Customer" asp-controller="Memo" asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="mb-3">
+        <label>عنوان المذكرة</label>
+        <input asp-for="Subject" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>الجهة المستقبلة</label>
+        <select asp-for="ToDepartmentId"
+                asp-items="@(new SelectList(ViewBag.Departments, "Value", "Text"))"
+                class="form-select">
+            <option value="">-- اختر الجهة المستقبلة --</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label>محتوى المذكرة</label>
+        <textarea asp-for="Body" class="form-control" rows="5"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-success">إرسال</button>
+    <a asp-action="Inbox" class="btn btn-secondary">رجوع</a>
+</form>
+

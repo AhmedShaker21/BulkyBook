@@ -1,0 +1,36 @@
+﻿@model BulkyBook.Models.ApplicationUser
+
+<h2>تعديل مستخدم</h2>
+
+<form method="post">
+
+    <input type="hidden" asp-for="Id" />
+
+    <div class="mb-3">
+        <label>الاسم</label>
+        <input asp-for="Name" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>الإيميل</label>
+        <input asp-for="Email" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>الدور</label>
+        <select name="role" class="form-control" asp-items="ViewBag.Roles"></select>
+    </div>
+
+    <div class="mb-3">
+        <label>القطاع</label>
+        <select asp-for="SectorId" class="form-control" asp-items="ViewBag.Sectors"></select>
+    </div>
+
+    <div class="mb-3">
+        <label>الإدارة</label>
+        <select asp-for="DepartmentId" class="form-control" asp-items="ViewBag.Departments"></select>
+    </div>
+
+    <button class="btn btn-success">حفظ</button>
+
+</form>

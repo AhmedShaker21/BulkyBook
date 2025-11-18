@@ -10,31 +10,23 @@ namespace BulkyBook.DataAccess.Repository
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private ApplicationDbContext _db;
-        public ICategoryRepository Category { get; private set; }
-        public ICompanyRepository Company { get; private set; }
-        public IProductRepository Product { get; private set; }
-        public IShoppingCartRepository ShoppingCart { get; private set; }  
-        public IApplicationUserRepository ApplicationUser { get; private set; }
-        public IOrderHeaderRepository OrderHeader { get; private set; }
-        public IOrderDetailRepository OrderDetail { get; private set; }
-        public IProductImageRepository ProductImage { get; private set; }
-        public UnitOfWork(ApplicationDbContext db)
+        private readonly ApplicationDbContext _context;
+
+        public ISectorRepository Sector { get; private set; }
+        public IDepartmentRepository Department { get; private set; }
+        public IMemoRepository Memo { get; private set; }
+
+        public UnitOfWork(ApplicationDbContext context)
         {
-            _db = db;
-            ProductImage = new ProductImageRepository(_db);
-            ApplicationUser = new ApplicationUserRepository(_db);
-            ShoppingCart = new ShoppingCartRepository(_db);
-            Category = new CategoryRepository(_db);
-            Product = new ProductRepository(_db);
-            Company = new CompanyRepository(_db);   
-            OrderHeader = new OrderHeaderRepository(_db);
-            OrderDetail = new OrderDetailRepository(_db);   
+            _context = context;
+            Sector = new SectorRepository(context);
+            Department = new DepartmentRepository(context);
+            Memo = new MemoRepository(context);
         }
 
         public void Save()
         {
-            _db.SaveChanges();
+            _context.SaveChanges();
         }
     }
 }

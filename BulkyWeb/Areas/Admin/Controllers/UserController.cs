@@ -1,134 +1,172 @@
-﻿using BulkyBook.DataAccess.Repository.IRepository;
-using BulkyBook.DataAcess.Data;
+﻿using BulkyBook.DataAcess.Data;
 using BulkyBook.Models;
 using BulkyBook.Models.ViewModels;
-using BulkyBook.Utility;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Data;
 
 namespace BulkyBookWeb.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = SD.Role_Admin)]
     public class UserController : Controller
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly IUnitOfWork _unitOfWork;
-        public UserController(UserManager<IdentityUser> userManager, IUnitOfWork unitOfWork, RoleManager<IdentityRole> roleManager) {
-            _unitOfWork = unitOfWork;
-            _roleManager = roleManager;
-            _userManager = userManager;
-        }
-        public IActionResult Index() 
+
+        public UserController(
+            ApplicationDbContext context,
+            UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager)
         {
-            return View();
+            _context = context;
+            _userManager = userManager;
+            _roleManager = roleManager;
         }
 
-        public IActionResult RoleManagment(string userId) {
+        // ============================
+        // عرض كل المستخدمين
+        // ============================
+        public IActionResult Index()
+        {
+            var users = _context.Users
+                .Select(u => new
+                {
+                    u.Id,
+                    u.Name,
+                    u.Email,
+                    Role = _context.UserRoles
+                            .Where(r => r.UserId == u.Id)
+                            .Select(r => _context.Roles.FirstOrDefault(x => x.Id == r.RoleId).Name)
+                            .FirstOrDefault(),
+                    Sector = u.SectorId != null ? _context.Sectors.FirstOrDefault(s => s.Id == u.SectorId).Name : "-",
+                    Department = u.DepartmentId != null ? _context.Departments.FirstOrDefault(d => d.Id == u.DepartmentId).Name : "-"
+                })
+                .ToList();
 
-            RoleManagmentVM RoleVM = new RoleManagmentVM() {
-                ApplicationUser = _unitOfWork.ApplicationUser.Get(u => u.Id == userId, includeProperties:"Company"),
-                RoleList = _roleManager.Roles.Select(i => new SelectListItem {
-                    Text = i.Name,
-                    Value = i.Name
-                }),
-                CompanyList = _unitOfWork.Company.GetAll().Select(i => new SelectListItem {
-                    Text = i.Name,
-                    Value = i.Id.ToString()
-                }),
+            return View(users);
+        }
+
+        // ============================
+        // GET: Create
+        // ============================
+        public IActionResult Create()
+        {
+            ViewBag.Roles = new SelectList(_roleManager.Roles.ToList(), "Name", "Name");
+            ViewBag.Sectors = new SelectList(_context.Sectors.ToList(), "Id", "Name");
+            ViewBag.Departments = new SelectList(_context.Departments.ToList(), "Id", "Name");
+
+            return View(new UserCreateViewModel());
+        }
+
+        // ============================
+        // POST: Create
+        // ============================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(UserCreateViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Roles = new SelectList(_roleManager.Roles.ToList(), "Name", "Name");
+                ViewBag.Sectors = new SelectList(_context.Sectors.ToList(), "Id", "Name");
+                ViewBag.Departments = new SelectList(_context.Departments.ToList(), "Id", "Name");
+                return View(model);
+            }
+
+            var user = new ApplicationUser
+            {
+                Name = model.Name,
+                Email = model.Email,
+                UserName = model.Email,  // مهم جداً
+                SectorId = model.SectorId,
+                DepartmentId = model.DepartmentId
             };
 
-            RoleVM.ApplicationUser.Role = _userManager.GetRolesAsync(_unitOfWork.ApplicationUser.Get(u=>u.Id==userId))
-                    .GetAwaiter().GetResult().FirstOrDefault();
-            return View(RoleVM);
+            var result = await _userManager.CreateAsync(user, model.Password);
+
+            if (result.Succeeded)
+            {
+                await _userManager.AddToRoleAsync(user, model.Role);
+                TempData["success"] = "تم إنشاء المستخدم بنجاح!";
+                return RedirectToAction("Index");
+            }
+
+            foreach (var error in result.Errors)
+                ModelState.AddModelError("", error.Description);
+
+            return View(model);
         }
 
+        // ============================
+        // GET: Edit
+        // ============================
+        public IActionResult Edit(string id)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.Id == id);
+            if (user == null) return NotFound();
+
+            ViewBag.Roles = new SelectList(_roleManager.Roles.ToList(), "Name", "Name",
+                _userManager.GetRolesAsync(user).Result.FirstOrDefault());
+
+            ViewBag.Sectors = new SelectList(_context.Sectors.ToList(), "Id", "Name", user.SectorId);
+            ViewBag.Departments = new SelectList(_context.Departments.ToList(), "Id", "Name", user.DepartmentId);
+
+            return View(user);
+        }
+
+        // ============================
+        // POST: Edit
+        // ============================
         [HttpPost]
-        public IActionResult RoleManagment(RoleManagmentVM roleManagmentVM) {
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(ApplicationUser model, string role)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.Id == model.Id);
+            if (user == null) return NotFound();
 
-            string oldRole  = _userManager.GetRolesAsync(_unitOfWork.ApplicationUser.Get(u => u.Id == roleManagmentVM.ApplicationUser.Id))
-                    .GetAwaiter().GetResult().FirstOrDefault();
+            user.Name = model.Name;
+            user.Email = model.Email;
+            user.UserName = model.Email;   // مهم
+            user.SectorId = model.SectorId;
+            user.DepartmentId = model.DepartmentId;
 
-            ApplicationUser applicationUser = _unitOfWork.ApplicationUser.Get(u => u.Id == roleManagmentVM.ApplicationUser.Id);
+            var oldRoles = await _userManager.GetRolesAsync(user);
+            await _userManager.RemoveFromRolesAsync(user, oldRoles.ToArray());
+            await _userManager.AddToRoleAsync(user, role);
 
+            _context.SaveChanges();
 
-            if (!(roleManagmentVM.ApplicationUser.Role == oldRole)) {
-                //a role was updated
-                if (roleManagmentVM.ApplicationUser.Role == SD.Role_Company) {
-                    applicationUser.CompanyId = roleManagmentVM.ApplicationUser.CompanyId;
-                }
-                if (oldRole == SD.Role_Company) {
-                    applicationUser.CompanyId = null;
-                }
-                _unitOfWork.ApplicationUser.Update(applicationUser);
-                _unitOfWork.Save();
-
-                _userManager.RemoveFromRoleAsync(applicationUser, oldRole).GetAwaiter().GetResult();
-                _userManager.AddToRoleAsync(applicationUser, roleManagmentVM.ApplicationUser.Role).GetAwaiter().GetResult();
-
-            }
-            else {
-                if(oldRole==SD.Role_Company && applicationUser.CompanyId != roleManagmentVM.ApplicationUser.CompanyId) {
-                    applicationUser.CompanyId = roleManagmentVM.ApplicationUser.CompanyId;
-                    _unitOfWork.ApplicationUser.Update(applicationUser);
-                    _unitOfWork.Save();
-                }
-            }
-
+            TempData["success"] = "تم تحديث المستخدم بنجاح!";
             return RedirectToAction("Index");
         }
 
-
-        #region API CALLS
-
-        [HttpGet]
-        public IActionResult GetAll()
+        // ============================
+        // GET: Delete
+        // ============================
+        public IActionResult Delete(string id)
         {
-            List<ApplicationUser> objUserList = _unitOfWork.ApplicationUser.GetAll(includeProperties: "Company").ToList();
+            var user = _context.Users.FirstOrDefault(u => u.Id == id);
+            if (user == null) return NotFound();
 
-            foreach(var user in objUserList) {
-
-                user.Role=  _userManager.GetRolesAsync(user).GetAwaiter().GetResult().FirstOrDefault();
-
-                if (user.Company == null) {
-                    user.Company = new Company() {
-                        Name = ""
-                    };
-                }
-            }
-
-            return Json(new { data = objUserList });
+            return View(user);
         }
 
-
+        // ============================
+        // POST: Delete Confirm
+        // ============================
         [HttpPost]
-        public IActionResult LockUnlock([FromBody]string id)
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteConfirmed(string id)
         {
+            var user = _context.Users.FirstOrDefault(u => u.Id == id);
+            if (user == null) return NotFound();
 
-            var objFromDb = _unitOfWork.ApplicationUser.Get(u => u.Id == id);
-            if (objFromDb == null) 
-            {
-                return Json(new { success = false, message = "Error while Locking/Unlocking" });
-            }
+            _context.Users.Remove(user);
+            _context.SaveChanges();
 
-            if(objFromDb.LockoutEnd!=null && objFromDb.LockoutEnd > DateTime.Now) {
-                //user is currently locked and we need to unlock them
-                objFromDb.LockoutEnd = DateTime.Now;
-            }
-            else {
-                objFromDb.LockoutEnd = DateTime.Now.AddYears(1000);
-            }
-            _unitOfWork.ApplicationUser.Update(objFromDb);
-            _unitOfWork.Save();
-            return Json(new { success = true, message = "Operation Successful" });
+            TempData["success"] = "تم حذف المستخدم بنجاح!";
+            return RedirectToAction("Index");
         }
-
-        #endregion
     }
 }

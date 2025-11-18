@@ -1,0 +1,16 @@
+﻿@model BulkyBook.Models.Department
+
+<h3 class="mb-4 text-danger">هل أنت متأكد من حذف هذه الإدارة؟</h3>
+
+<div class="card p-4 shadow">
+    <p><strong>الاسم:</strong> @Model.Name</p>
+    <p><strong>الوصف:</strong> @Model.Description</p>
+    <p><strong>القطاع:</strong> @Model.Sector?.Name</p>
+
+    <form asp-action="DeleteConfirmed" method="post">
+        <input type="hidden" asp-for="Id" />
+
+        <button type="submit" class="btn btn-danger">حذف</button>
+        <a asp-action="Index" class="btn btn-secondary">عودة</a>
+    </form>
+</div>

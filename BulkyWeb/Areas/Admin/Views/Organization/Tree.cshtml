@@ -1,0 +1,117 @@
+﻿@using Microsoft.AspNetCore.Html
+@model IEnumerable<BulkyBookWeb.Areas.Admin.Controllers.OrganizationTreeViewModel>
+
+<h2 class="mb-4">الهيكل التنظيمي</h2>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+
+<style>
+    .tree-box {
+        background: #f8fbff;
+        border-radius: 10px;
+        padding: 20px;
+        border: 1px solid #dde4ec;
+    }
+
+    .sector-title {
+        background: #003d66;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .department-title {
+        background: #005f99;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
+    .user-item {
+        padding: 6px 12px;
+        margin: 5px 0;
+        background: white;
+        border-left: 4px solid #007acc;
+        border-radius: 6px;
+        font-size: 14px;
+        display: flex;
+        justify-content: space-between;
+    }
+</style>
+
+<div class="tree-box">
+
+    @foreach (var s in Model)
+    {
+        <div class="sector mb-3">
+            <div class="sector-title" onclick="toggleSection('sector-@s.SectorId')">
+                <i class="fas fa-building me-2"></i>
+                <strong>@s.SectorName</strong>
+                <i class="float-end fas fa-chevron-down"></i>
+            </div>
+
+            <div id="sector-@s.SectorId" style="display:none; padding-right:15px;">
+
+                @foreach (var d in s.Departments)
+                {
+                    <div class="department mt-2">
+                        <div class="department-title" onclick="toggleSection('dept-@d.DepartmentId')">
+                            <i class="fa-solid fa-layer-group me-2"></i>
+                            @d.DepartmentName
+                            <i class="float-end fas fa-chevron-down"></i>
+                        </div>
+
+                        <div id="dept-@d.DepartmentId" style="display:none; margin-right:15px;">
+
+                            @foreach (var u in d.Users)
+                            {
+                                <div class="user-item">
+                                    <span>
+                                        <i class="fas fa-user"></i>
+                                        @u.Name
+                                    </span>
+
+                                    <span class="text-muted">
+                                        @GetRoleIcon(u.Role)
+                                        @u.Role
+                                    </span>
+                                </div>
+                            }
+
+                        </div>
+                    </div>
+                }
+
+            </div>
+        </div>
+    }
+
+</div>
+
+@functions {
+    public HtmlString GetRoleIcon(string role)
+    {
+        string icon = "";
+
+        switch (role)
+        {
+            case "Chairman": icon = "<i class='fas fa-star'></i>"; break;
+            case "SectorManager": icon = "<i class='fas fa-user-tie'></i>"; break;
+            case "GeneralManager": icon = "<i class='fas fa-user-gear'></i>"; break;
+            case "DepartmentManager": icon = "<i class='fas fa-user-shield'></i>"; break;
+            default: icon = "<i class='fas fa-user'></i>"; break;
+        }
+
+        return new HtmlString(icon);
+    }
+}
+
+<script>
+    function toggleSection(id){
+        const el = document.getElementById(id);
+        el.style.display = (el.style.display === "none") ? "block" : "none";
+    }
+</script>

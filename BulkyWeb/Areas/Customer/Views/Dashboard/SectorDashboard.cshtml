@@ -1,0 +1,89 @@
+﻿@model BulkyBook.Models.ViewModels.SectorDashboardVM
+
+<h2 class="mb-4">لوحة التحكم - مدير قطاع @Model.SectorName</h2>
+
+<div class="row">
+
+    <!-- Employees -->
+    <div class="col-md-3 mb-3">
+        <div class="card shadow p-3 text-center" style="border-top:4px solid #007acc">
+            <h6>عدد الموظفين</h6>
+            <h2>@Model.EmployeesCount</h2>
+        </div>
+    </div>
+
+    <!-- Departments -->
+    <div class="col-md-3 mb-3">
+        <div class="card shadow p-3 text-center" style="border-top:4px solid #005f99">
+            <h6>عدد الإدارات</h6>
+            <h2>@Model.Departments.Count</h2>
+        </div>
+    </div>
+
+    <!-- Sent -->
+    <div class="col-md-3 mb-3">
+        <div class="card shadow p-3 text-center" style="border-top:4px solid #28a745">
+            <h6>مذكرات صادرة من القطاع</h6>
+            <h2>@Model.SentMemos</h2>
+        </div>
+    </div>
+
+    <!-- Received -->
+    <div class="col-md-3 mb-3">
+        <div class="card shadow p-3 text-center" style="border-top:4px solid #ffc107">
+            <h6>مذكرات واردة للقطاع</h6>
+            <h2>@Model.ReceivedMemos</h2>
+        </div>
+    </div>
+
+</div>
+
+<hr />
+
+<h4 class="mt-4">الإدارات التابعة للقطاع</h4>
+
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>اسم الإدارة</th>
+            <th>الوصف</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var d in Model.Departments)
+        {
+            <tr>
+                <td>@d.Name</td>
+                <td>@d.Description</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<hr />
+
+<h4 class="mt-4">أحدث 5 مذكرات تخص القطاع</h4>
+
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>العنوان</th>
+            <th>من</th>
+            <th>إلى</th>
+            <th>الحالة</th>
+            <th>التاريخ</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var m in Model.LatestMemos)
+        {
+            <tr>
+                <td>@m.Subject</td>
+                <td>@m.FromDepartment?.Name</td>
+                <td>@m.ToDepartment?.Name</td>
+                <td>@m.Status</td>
+                <td>@m.CreatedAt.ToString("yyyy/MM/dd")</td>
+            </tr>
+        }
+    </tbody>
+</table>

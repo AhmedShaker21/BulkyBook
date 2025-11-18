@@ -10,62 +10,54 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace BulkyBook.DataAccess.DbInitializer {
-    public class DbInitializer : IDbInitializer {
-
-        private readonly UserManager<IdentityUser> _userManager;
+    public class DbInitializer : IDbInitializer
+    {
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly ApplicationDbContext _db;
+        private readonly ApplicationDbContext _context;
 
         public DbInitializer(
-            UserManager<IdentityUser> userManager,
+            UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
-            ApplicationDbContext db) {
-            _roleManager = roleManager;
+            ApplicationDbContext context)
+        {
             _userManager = userManager;
-            _db = db;
+            _roleManager = roleManager;
+            _context = context;
         }
 
-
-        public void Initialize() {
-
-
-            //migrations if they are not applied
-            try {
-                if (_db.Database.GetPendingMigrations().Count() > 0) {
-                    _db.Database.Migrate();
+        public void Initialize()
+        {
+            try
+            {
+                if (_context.Database.GetPendingMigrations().Any())
+                {
+                    _context.Database.Migrate();
                 }
             }
-            catch(Exception ex) { }
+            catch { }
 
+            // Roles
+            if (!_roleManager.RoleExistsAsync("Chairman").GetAwaiter().GetResult())
+            {
+                _roleManager.CreateAsync(new IdentityRole("Chairman")).GetAwaiter().GetResult();
+                _roleManager.CreateAsync(new IdentityRole("SectorManager")).GetAwaiter().GetResult();
+                _roleManager.CreateAsync(new IdentityRole("GeneralManager")).GetAwaiter().GetResult();
+                _roleManager.CreateAsync(new IdentityRole("DepartmentManager")).GetAwaiter().GetResult();
+                _roleManager.CreateAsync(new IdentityRole("Employee")).GetAwaiter().GetResult();
 
+                // Create Chairman user
+                var user = new ApplicationUser
+                {
+                    UserName = "chairman@org.com",
+                    Email = "chairman@org.com",
+                    Name = "Chairman",
+                    EmailConfirmed = true
+                };
 
-            //create roles if they are not created
-            if (!_roleManager.RoleExistsAsync(SD.Role_Customer).GetAwaiter().GetResult()) {
-                _roleManager.CreateAsync(new IdentityRole(SD.Role_Customer)).GetAwaiter().GetResult();
-                _roleManager.CreateAsync(new IdentityRole(SD.Role_Employee)).GetAwaiter().GetResult();
-                _roleManager.CreateAsync(new IdentityRole(SD.Role_Admin)).GetAwaiter().GetResult();
-                _roleManager.CreateAsync(new IdentityRole(SD.Role_Company)).GetAwaiter().GetResult();
-
-
-                //if roles are not created, then we will create admin user as well
-                _userManager.CreateAsync(new ApplicationUser {
-                    UserName = "admin@dotnetmastery.com",
-                    Email = "admin@dotnetmastery.com",
-                    Name = "Ahmed Shaker",
-                    PhoneNumber = "1127765633",
-                    StreetAddress = "Cairo",
-                    State = "Cairo",
-                    PostalCode = "11711",
-                    City = "Cairo"
-                }, "Admin123*").GetAwaiter().GetResult();
-
-
-                ApplicationUser user = _db.ApplicationUsers.FirstOrDefault(u => u.Email == "admin@dotnetmastery.com");
-                _userManager.AddToRoleAsync(user, SD.Role_Admin).GetAwaiter().GetResult();
-
+                _userManager.CreateAsync(user, "Admin123!").GetAwaiter().GetResult();
+                _userManager.AddToRoleAsync(user, "Chairman").GetAwaiter().GetResult();
             }
-
-            return;
         }
     }
 }

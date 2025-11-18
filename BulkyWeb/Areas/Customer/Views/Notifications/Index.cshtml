@@ -1,0 +1,36 @@
+﻿@model IEnumerable<BulkyBook.Models.Notification>
+
+<h2>الإشعارات</h2>
+
+<a class="btn btn-sm btn-secondary mb-3" asp-action="MarkAllAsRead">تحديد الكل كمقروء</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>العنوان</th>
+            <th>الرسالة</th>
+            <th>التاريخ</th>
+            <th>الحالة</th>
+            <th>فتح</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var n in Model)
+        {
+            <tr class="@(n.IsRead ? "" : "table-info")">
+                <td>@n.Title</td>
+                <td>@n.Message</td>
+                <td>@n.CreatedAt.ToString("yyyy/MM/dd HH:mm")</td>
+                <td>@(n.IsRead ? "مقروء" : "غير مقروء")</td>
+
+                <td>
+                    @if (!n.IsRead)
+                    {
+                        <a asp-action="MarkAsRead" asp-route-id="@n.Id" class="btn btn-primary btn-sm">فتح</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

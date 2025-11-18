@@ -1,0 +1,97 @@
+﻿@model BulkyBook.Models.Reports.MemosReportFilterVM
+@using BulkyBook.Models
+
+<h2>تقرير المذكرات</h2>
+
+<form method="post" asp-action="Memos">
+
+    <div class="row mb-3">
+
+        <div class="col-md-3">
+            <label>من تاريخ</label>
+            <input asp-for="FromDate" type="date" class="form-control" />
+        </div>
+
+        <div class="col-md-3">
+            <label>إلى تاريخ</label>
+            <input asp-for="ToDate" type="date" class="form-control" />
+        </div>
+
+        <div class="col-md-3">
+            <label>القطاع</label>
+            <select asp-for="SectorId" class="form-select" asp-items="@(new SelectList(Model.Sectors, "Id", "Name"))">
+                <option value="">الكل</option>
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <label>الإدارة</label>
+            <select asp-for="DepartmentId" class="form-select" asp-items="@(new SelectList(Model.Departments, "Id", "Name"))">
+                <option value="">الكل</option>
+            </select>
+        </div>
+
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <label>الحالة</label>
+            <select asp-for="Status" class="form-select">
+                <option value="">الكل</option>
+                @foreach (MemoStatus st in Enum.GetValues(typeof(MemoStatus)))
+                {
+                    <option value="@st">@st</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-3 d-flex align-items-end">
+            <button class="btn btn-primary">عرض التقرير</button>
+        </div>
+    </div>
+
+</form>
+
+
+@if (Model.Result != null && Model.Result.Any())
+{
+    <form asp-action="ExportMemosCsv" method="post">
+        <input type="hidden" asp-for="FromDate" />
+        <input type="hidden" asp-for="ToDate" />
+        <input type="hidden" asp-for="SectorId" />
+        <input type="hidden" asp-for="DepartmentId" />
+        <input type="hidden" asp-for="Status" />
+
+        <button class="btn btn-success mb-3">تصدير CSV</button>
+    </form>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>العنوان</th>
+                <th>من</th>
+                <th>إلى</th>
+                <th>الحالة</th>
+                <th>التاريخ</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var m in Model.Result)
+            {
+                <tr>
+                    <td>@m.Subject</td>
+                    <td>@m.FromDepartment?.Name</td>
+                    <td>@m.ToDepartment?.Name</td>
+                    <td>@await Html.PartialAsync("_MemoStatusBadge", m.Status)</td>
+                    <td>@m.CreatedAt.ToString("yyyy/MM/dd")</td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+}
+else
+{
+    <p class="mt-4">لا توجد بيانات مطابقة للفلاتر المحددة.</p>
+}
