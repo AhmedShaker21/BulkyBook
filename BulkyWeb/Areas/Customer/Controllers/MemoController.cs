@@ -152,11 +152,6 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
             return RedirectToAction(nameof(Inbox));
         }
 
-
-
-        // ================================
-        // الموافقة
-        // ================================
         [Authorize(Roles = "DepartmentManager, GeneralManager, SectorManager, Chairman")]
         public IActionResult Approve(int id)
         {
